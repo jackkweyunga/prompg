@@ -10,10 +10,20 @@ This will launch the exporter and a full monitoring stack (Postgres, Prometheus,
 
 ### 1. Configure Database Connection
 
-Create a `.env` file in the project root with your database credentials. For the local Docker setup, the host should be `postgres`.
+Create a `.env` file in the project root. The exporter connects to PostgreSQL using one of two methods, in order of priority:
 
+1.  **`DATABASE_URL` (Recommended):** A single connection string.
+2.  **Individual `DATABASE_*` variables:** If `DATABASE_URL` is not set, the exporter will use these as a fallback.
+
+**Example `.env`:**
 ```env
 # .env
+
+# Recommended: Use a single connection URL. If this is uncommented, it will be used.
+# DATABASE_URL="postgres://postgres:password@postgres:5432/postgres"
+
+# Fallback: Individual variables are used if DATABASE_URL is not set.
+# For the local Docker setup, the host should be `postgres`.
 DATABASE_USER=postgres
 DATABASE_PASSWORD=password
 DATABASE_HOST=postgres

@@ -17,33 +17,19 @@ pub struct QueryConfig {
     pub metric_type: MetricType,
 }
 
-#[derive(Debug, Deserialize, Clone)]
-pub struct DatabaseConfig {
-    pub user: String,
-    pub password: String,
-    pub host: String,
-    pub port: u16,
-    pub dbname: String,
-}
-
-#[derive(Debug, Deserialize, Clone)]
+#[derive(Debug, Deserialize, Clone, Default)]
 pub struct Config {
-    pub database: DatabaseConfig,
     #[serde(default)]
     pub queries: Vec<QueryConfig>,
 }
 
 impl Config {
-    pub fn from_env() -> Result<Self, config::ConfigError> {
-        let result = config::Config::builder()
-            .add_source(config::Environment::default().separator("_"))
-            .add_source(config::File::with_name("config/metrics"))
+    /// Loads query configuration from `config/metrics.toml`.
+    /// This file is optional.
+    pub fn from_file() -> Result<Self, config::ConfigError> {
+        config::Config::builder()
+            .add_source(config::File::with_name("config/metrics").required(false))
             .build()?
-            .try_deserialize();
-
-        if let Ok(config) = &result {
-            dbg!(config);
-        }
-        result
+            .try_deserialize()
     }
 }

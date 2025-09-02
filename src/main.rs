@@ -38,10 +38,14 @@ async fn metrics_handler(
 
 #[tokio::main]
 async fn main() {
+    // Load environment variables from .env file. This must be done before initializing the logger.
+    let dotenv_result = dotenvy::dotenv();
+
     // Initialize the logger. This reads the RUST_LOG environment variable.
     env_logger::init();
 
-    match dotenvy::dotenv() {
+    // Now that the logger is initialized, we can log the result of the dotenv call.
+    match dotenv_result {
         Ok(path) => info!("✓ Loaded .env file from: {}", path.display()),
         Err(e) => warn!(
             "✗ Could not load .env file: {}. Relying on environment variables.",
@@ -49,15 +53,12 @@ async fn main() {
         ),
     }
 
-    // Perform the initial configuration load.
-    let config = config::Config::from_env().expect("FATAL: Failed to load initial configuration");
-    let db_config = config.database.clone();
+    // Load metrics configuration from `config/metrics.toml`.
+    let config = config::Config::from_file()
+        .expect("FATAL: Failed to load metrics configuration from config/metrics.toml");
 
-    let pool = db::create_pool(&db_config).expect("FATAL: Failed to create database pool");
-    info!(
-        "✓ Connected to database: user={}, host={}, port={}, dbname={}",
-        db_config.user, db_config.host, db_config.port, db_config.dbname
-    );
+    // Create the database pool. This will read from DATABASE_URL or DATABASE_* env vars.
+    let pool = db::create_pool().expect("FATAL: Failed to create database pool");
 
     // Create the initial, shared application state.
     let initial_state =
@@ -109,8 +110,8 @@ async fn watch_config_changes(shared_state: Arc<Mutex<AppState>>) {
                 {
                     info!("✓ Change detected in config/metrics.toml, attempting to reload...");
 
-                    // Attempt to reload the configuration.
-                    match config::Config::from_env() {
+                    // Attempt to reload the metrics configuration from file.
+                    match config::Config::from_file() {
                         Ok(new_config) => {
                             // Create a new AppState based on the new config.
                             match AppState::new(&new_config) {
