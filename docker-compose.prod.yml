@@ -1,0 +1,32 @@
+version: '3.8'
+
+# This is a sample Docker Compose file for running the metrics-exporter in a production environment.
+# It assumes that your PostgreSQL database, Prometheus, and Grafana are running elsewhere and are accessible.
+
+services:
+  metrics-exporter:
+    # Use the pre-built, production-ready image from the GitHub Container Registry.
+    # This avoids the need to build the image on the production server.
+    image: ghcr.io/jackkweyunga/prompg:main
+
+    # Ensure the container restarts automatically if it stops for any reason,
+    # unless it was manually stopped. This is crucial for long-running services.
+    restart: unless-stopped
+
+    # Map the container's internal port 8080 to the host machine's port 8080.
+    # This makes the /metrics endpoint available for Prometheus to scrape.
+    ports:
+      - "8080:8080"
+
+    # Provide the database connection details via an environment file.
+    # It is strongly recommended to use a separate, securely managed file for production secrets.
+    env_file: ./.env.prod
+
+    # Mount the metrics configuration file into the container from the host.
+    # This is the primary way to configure your custom SQL queries for the production database.
+    # The ':ro' flag makes the volume read-only inside the container for better security.
+    volumes:
+      - ./config/metrics.prod.toml:/app/config/metrics.toml:ro
+
+    # Optional: Set a specific container name for easier identification and management.
+    container_name: prompg_exporter
