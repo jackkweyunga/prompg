@@ -75,6 +75,7 @@ query = """
   GROUP BY
     verification_status
 """
+```
 
 ### 3. Configure Logging (Optional)
 
@@ -86,9 +87,8 @@ The default log level is `info`.
 -   **`RUST_LOG=warn`**: Quieter. Only shows warnings for failed SQL queries or issues parsing results.
 -   **`RUST_LOG=error`**: Only shows critical errors, such as a failure to connect to the database or an invalid configuration file.
 -   **`RUST_LOG=debug`**: Very verbose. Logs every metric value that is set for every scrape. Useful for debugging a specific query.
-```
 
-### 4. Run the Entire Stack
+## 4. Run the Entire Stack
 
 With your configuration in place, you can launch the exporter, Prometheus, and Grafana with a single command:
 
