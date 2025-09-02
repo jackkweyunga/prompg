@@ -78,8 +78,8 @@ async fn main() {
         .and(with_state)
         .and_then(metrics_handler);
 
-    info!("✓ Starting server at http://127.0.0.1:8080/metrics");
-    warp::serve(metrics_route).run(([127, 0, 0, 1], 8080)).await;
+    info!("✓ Starting server at http://0.0.0.0:8080/metrics");
+    warp::serve(metrics_route).run(([0, 0, 0, 0], 8080)).await;
 }
 
 /// Watches for changes in `config/metrics.toml` and reloads the application state.
