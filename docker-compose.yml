@@ -1,0 +1,37 @@
+version: "3.8"
+
+services:
+  prompg:
+    build: .
+    restart: unless-stopped
+    ports:
+      - "5080:8080"
+    env_file: .env
+    volumes:
+      # This allows you to replace the metrics configuration at runtime.
+      - ./config/metrics.toml:/app/config/metrics.toml:ro
+
+  prometheus:
+    image: prom/prometheus:v2.30.3
+    restart: unless-stopped
+    depends_on:
+      - prompg
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./config/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+
+  grafana:
+    image: grafana/grafana:8.2.3
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./config/grafana/datasource.yml:/etc/grafana/provisioning/datasources/datasource.yml
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=password
+
+volumes:
+  postgres_data:

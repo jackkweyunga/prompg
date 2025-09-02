@@ -1,0 +1,54 @@
+[[queries]]
+name = "pg_postmaster_start_time_seconds"
+help = "Time at which postmaster started"
+query = "SELECT extract(epoch from pg_postmaster_start_time())::float8 as start_time_seconds"
+value_column = "start_time_seconds"
+metric_type = "gauge"
+
+[[queries]]
+name = "pg_database_size_bytes"
+help = "Size of the database in bytes"
+query = "SELECT pg_database_size(current_database())::float8 as size_bytes"
+value_column = "size_bytes"
+metric_type = "gauge"
+
+[[queries]]
+name = "accounts_users_total"
+help = "Total number of users."
+query = "SELECT COUNT(*)::float8 AS value FROM public.accounts_user"
+value_column = "value"
+metric_type = "gauge"
+
+[[queries]]
+name = "accounts_users_active_total"
+help = "Total number of active users."
+query = "SELECT COUNT(*)::float8 AS value FROM public.accounts_user WHERE is_active = true"
+value_column = "value"
+metric_type = "gauge"
+
+[[queries]]
+name = "accounts_users_joined_24h_total"
+help = "Total number of users joined in the last 24 hours."
+query = "SELECT COUNT(*)::float8 AS value FROM public.accounts_user WHERE date_joined >= NOW() - INTERVAL '24 hours'"
+value_column = "value"
+metric_type = "gauge"
+
+[[queries]]
+name = "accounts_users_joined_daily_total"
+help = "Total number of users who joined on a given day (looks back 30 days)."
+metric_type = "gauge"
+value_column = "total_users"
+label_columns = ["join_day"]
+query = """
+  SELECT
+    to_char(date_joined, 'YYYY-MM-DD') AS join_day,
+    COUNT(*)::float8 AS total_users
+  FROM
+    public.accounts_user
+  WHERE
+    date_joined >= NOW() - INTERVAL '30 days'
+  GROUP BY
+    join_day
+  ORDER BY
+    join_day;
+"""
